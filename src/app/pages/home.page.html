@@ -1,0 +1,159 @@
+<div
+	class="relative flex h-screen w-full flex-col overflow-hidden bg-slate-950 p-4 pt-24 font-sans sm:p-6 md:flex-row md:gap-6 md:p-8 md:pt-28"
+>
+	<!-- Background Blobs (Esenciales para resaltar el Glassmorphism) -->
+	<div
+		class="pointer-events-none absolute top-[-10%] left-[-10%] h-[50vh] w-[50vw] rounded-full bg-indigo-600/40 blur-[120px]"
+	></div>
+	<div
+		class="pointer-events-none absolute right-[-10%] bottom-[-10%] h-[50vh] w-[50vw] rounded-full bg-purple-600/40 blur-[120px]"
+	></div>
+	<div
+		class="pointer-events-none absolute top-[20%] left-[40%] h-[30vh] w-[30vw] rounded-full bg-blue-500/30 blur-[100px]"
+	></div>
+
+	<!-- Header Flotante Glass -->
+	<div
+		class="absolute top-0 left-0 z-50 flex w-full items-center justify-between p-4 sm:p-6"
+	>
+		<!-- Etiqueta del usuario -->
+		<div
+			class="flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-md transition-colors hover:bg-white/15 sm:px-5 sm:py-2.5"
+		>
+			<div
+				class="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-white/20 pb-0.5 leading-none font-bold text-white shadow-inner"
+			>
+				{{ user()?.username?.charAt(0) | uppercase }}
+			</div>
+			<div>
+				<div class="text-sm leading-tight font-bold tracking-wide text-white">
+					{{ user()?.username }}
+				</div>
+				<div class="text-xs font-medium text-slate-300">
+					Ext: {{ user()?.extension }}
+				</div>
+			</div>
+		</div>
+
+		<!-- Botón Salir -->
+		<button
+			(click)="logout()"
+			class="flex cursor-pointer items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-300 shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-md transition-all duration-300 hover:border-red-400/60 hover:bg-red-500/30 hover:text-white sm:px-5 sm:py-2.5 sm:text-base"
+		>
+			<ng-icon name="heroArrowLeftStartOnRectangleSolid" size="24" />
+			<span class="hidden sm:inline">Cerrar Sesión</span>
+		</button>
+	</div>
+
+	<!-- LADO IZQUIERDO: Outbound (Panel de Cristal) -->
+	<div
+		(click)="goToOutbound()"
+		(mouseover)="isHoveringOutbound = true"
+		(mouseleave)="isHoveringOutbound = false"
+		class="group relative z-10 mb-4 flex h-full w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-lg transition-all duration-500 hover:-translate-y-1 hover:border-white/30 hover:bg-indigo-950/90 hover:shadow-[0_16px_48px_rgba(0,0,0,0.3)] md:mb-0 md:w-1/2"
+	>
+		<!-- Loading Overlay -->
+		<div
+			class="absolute inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-indigo-950 shadow-inner backdrop-blur-xl transition-all duration-300"
+			[class.opacity-100]="loadingOutbound()"
+			[class.opacity-0]="!loadingOutbound()"
+			[class.pointer-events-none]="!loadingOutbound()"
+		>
+			<div
+				class="h-14 w-14 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600 shadow-xl"
+			></div>
+			<div class="text-xl font-semibold text-indigo-100">Ingresando...</div>
+		</div>
+
+		<!-- Reflejo superior sutil -->
+		<div
+			class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/40 to-transparent"
+		></div>
+
+		<div
+			class="transform text-center transition-all duration-500 group-hover:scale-105"
+		>
+			<!-- Icono Outbound -->
+			<div
+				class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-white/5 shadow-inner backdrop-blur-md transition-all duration-500 group-hover:rotate-12 group-hover:bg-white/20"
+			>
+				<!-- Icon color needs logic to change on hover since ng-icon cannot use Tailwind colors directly -->
+				<ng-icon
+					name="heroPhoneArrowUpRightSolid"
+					class="transition-colors group-hover:text-white"
+					[color]="isHoveringOutbound ? 'white' : '#C7D2FE'"
+					size="44"
+				/>
+			</div>
+
+			<h2
+				class="mb-4 text-3xl font-bold tracking-tight text-white drop-shadow-md"
+			>
+				Campañas Salientes
+			</h2>
+
+			<!-- Mensaje hover -->
+			<p
+				class="inline-block transform rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-bold text-white opacity-0 shadow-lg backdrop-blur-md transition-all duration-500 group-hover:-translate-y-2 group-hover:opacity-100"
+			>
+				Haz clic para ingresar al panel
+			</p>
+		</div>
+	</div>
+
+	<!-- LADO DERECHO: Inbound (Panel de Cristal) -->
+	<div
+		(click)="goToInbound()"
+		(mouseover)="isHoveringInbound = true"
+		(mouseleave)="isHoveringInbound = false"
+		class="group relative z-10 flex h-full w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-lg transition-all duration-500 hover:-translate-y-1 hover:border-white/30 hover:bg-purple-950/90 hover:shadow-[0_16px_48px_rgba(0,0,0,0.3)] md:w-1/2"
+	>
+		<!-- Loading Overlay -->
+		<div
+			class="absolute inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-purple-950 shadow-inner backdrop-blur-xl transition-all duration-300"
+			[class.opacity-100]="loadingInbound()"
+			[class.opacity-0]="!loadingInbound()"
+			[class.pointer-events-none]="!loadingInbound()"
+		>
+			<div
+				class="h-14 w-14 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600 shadow-xl"
+			></div>
+			<div class="text-xl font-semibold text-purple-100">Ingresando...</div>
+		</div>
+
+		<!-- Reflejo superior sutil -->
+		<div
+			class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/40 to-transparent"
+		></div>
+
+		<div
+			class="transform text-center transition-all duration-500 group-hover:scale-105"
+		>
+			<!-- Icono Inbound -->
+			<div
+				class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-white/5 shadow-inner backdrop-blur-md transition-all duration-500 group-hover:-rotate-12 group-hover:bg-white/20"
+			>
+				<!-- Icon color needs logic to change on hover since ng-icon cannot use Tailwind colors directly -->
+				<ng-icon
+					name="heroPhoneArrowDownLeftSolid"
+					class="transition-colors group-hover:text-white"
+					[color]="isHoveringInbound ? 'white' : '#E9D5FF'"
+					size="44"
+				/>
+			</div>
+
+			<h2
+				class="mb-4 text-3xl font-bold tracking-tight text-white drop-shadow-md"
+			>
+				Campañas Entrantes
+			</h2>
+
+			<!-- Mensaje hover -->
+			<p
+				class="inline-block transform rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-bold text-white opacity-0 shadow-lg backdrop-blur-md transition-all duration-500 group-hover:-translate-y-2 group-hover:opacity-100"
+			>
+				Haz clic para ingresar al panel
+			</p>
+		</div>
+	</div>
+</div>

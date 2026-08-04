@@ -1,0 +1,6 @@
+{
+  "workbench.editor.customLabels.patterns": {
+    "**/src/server/**": "🟨 ${dirname} | ${filename}.${extname}",
+    "**/src/app/**": "🔴 ${dirname} | ${filename}.${extname}"
+  }
+}

@@ -1,0 +1,43 @@
+import {
+	mysqlTable,
+	int,
+	varchar,
+	datetime,
+	mysqlEnum,
+	text,
+} from "drizzle-orm/mysql-core";
+
+export const cdrTable = mysqlTable("cdr", {
+	cdrId: int("cdr_id", { unsigned: true }).primaryKey().autoincrement(),
+	calldate: datetime("calldate").notNull(),
+	clid: varchar("clid", { length: 80 }).notNull().default(""),
+	did: varchar("did", { length: 255 }),
+	source: varchar("source", { length: 80 }).notNull().default(""),
+	src: varchar("src", { length: 80 }).notNull().default(""),
+	dst: varchar("dst", { length: 80 }).notNull().default(""),
+	destination: varchar("destination", { length: 80 }).notNull().default(""),
+	dcontext: varchar("dcontext", { length: 80 }).notNull().default(""),
+	channel: varchar("channel", { length: 80 }).notNull().default(""),
+	dstchannel: varchar("dstchannel", { length: 80 }).notNull().default(""),
+	lastapp: varchar("lastapp", { length: 80 }).notNull().default(""),
+	lastdata: varchar("lastdata", { length: 80 }).notNull().default(""),
+	duration: int("duration").notNull().default(0),
+	billsec: int("billsec").notNull().default(0),
+	disposition: varchar("disposition", { length: 45 }).notNull().default(""),
+	amaflags: int("amaflags").notNull().default(0),
+	accountcode: varchar("accountcode", { length: 255 }).notNull().default(""),
+	authCode: varchar("auth_code", { length: 255 }),
+	customerCode: varchar("customer_code", { length: 255 }),
+	pinCode: varchar("pin_code", { length: 255 }),
+	uniqueid: varchar("uniqueid", { length: 32 }).notNull().default(""),
+	linkedid: varchar("linkedid", { length: 32 }).notNull().default(""),
+	sequence: varchar("sequence", { length: 32 }).notNull().default(""),
+	peeraccount: varchar("peeraccount", { length: 32 }).notNull().default(""),
+	calltype: mysqlEnum("calltype", ["1", "2", "3", "4"]).notNull().default("1"),
+	recfile: varchar("recfile", { length: 255 }).notNull().default(""),
+	cloudPath: text("cloud_path"),
+	tenant: varchar("tenant", { length: 80 }).notNull().default(""),
+	trunk: int("trunk", { unsigned: true }),
+});
+
+export type CdrTable = typeof cdrTable.$inferSelect;

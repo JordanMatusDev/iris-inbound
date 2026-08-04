@@ -1,0 +1,801 @@
+<div
+	class="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-indigo-950 font-sans text-slate-100 antialiased"
+>
+	<!-- Background Blobs fijos (Soportan scroll) -->
+	<div
+		class="pointer-events-none fixed top-[-10%] left-[-10%] h-[50vh] w-[50vw] rounded-full bg-indigo-500/30 blur-[120px]"
+	></div>
+	<div
+		class="pointer-events-none fixed right-[-10%] bottom-[-10%] h-[50vh] w-[50vw] rounded-full bg-purple-600/30 blur-[120px]"
+	></div>
+	<div
+		class="pointer-events-none fixed top-[30%] left-[30%] h-[40vh] w-[40vw] rounded-full bg-blue-500/20 blur-[120px]"
+	></div>
+
+	<!-- Header Glassmorphism (Adaptado del ejemplo) -->
+	<header
+		class="relative z-50 flex items-center justify-between border-b border-white/10 bg-white/5 px-6 py-4 shadow-sm backdrop-blur-md"
+	>
+		<div class="flex items-center gap-4">
+			<button
+				[disabled]="currentState() !== 'PAUSED' && currentState() !== 'SELECT_CAMPAIGN'"
+				(click)="goBack()"
+				[class.opacity-40]="currentState() !== 'PAUSED' && currentState() !== 'SELECT_CAMPAIGN'"
+				[class.pointer-events-none]="currentState() !== 'PAUSED' && currentState() !== 'SELECT_CAMPAIGN'"
+				class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-white/10 transition-all duration-300 hover:bg-white/20 hover:shadow-lg disabled:cursor-not-allowed"
+			>
+				<ng-icon name="heroArrowLeftSolid" size="20" color="white" />
+			</button>
+			<div>
+				<h1
+					class="text-xl font-bold tracking-tight text-white drop-shadow-sm"
+				>
+					Panel Inbound
+				</h1>
+				<p class="text-sm font-medium text-indigo-200">
+					Recepción de Llamadas
+				</p>
+			</div>
+		</div>
+
+		<!-- Usuario -->
+		<div
+			class="flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 shadow-inner backdrop-blur-sm"
+		>
+			<div
+				class="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-white/20 pb-0.5 leading-none font-bold text-white shadow-sm select-none"
+			>
+				{{ user()?.username?.charAt(0) | uppercase }}
+			</div>
+			<div
+				class="hidden text-sm font-bold tracking-wide text-white sm:block"
+			>
+				Ext: {{ user()?.extension }}
+			</div>
+		</div>
+	</header>
+
+	<!-- Main Content Area -->
+	<main
+		class="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-8 sm:px-6 md:py-12 lg:px-8"
+	>
+		<!-- ESTADO: SELECCIONAR CAMPAÑA -->
+		@if (currentState() === 'SELECT_CAMPAIGN') {
+		<div
+			class="animate-in fade-in mb-10 flex flex-col justify-between gap-4 duration-300 md:flex-row md:items-end"
+		>
+			<div>
+				<h1
+					class="text-3xl font-extrabold tracking-tight text-white drop-shadow-md"
+				>
+					Campañas Inbound
+				</h1>
+				<p class="mt-2 font-medium text-indigo-200">
+					Selecciona una cola para comenzar a recibir llamadas.
+				</p>
+			</div>
+		</div>
+
+		@if (isLoading()) {
+		<div
+			class="col-span-full flex flex-col items-center justify-center rounded-3xl border border-white/10 bg-white/5 p-12 text-center backdrop-blur-md"
+		>
+			<!-- Spinner con animación SVG -->
+			<svg
+				class="mb-4 h-10 w-10 animate-spin text-indigo-400"
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+			>
+				<circle
+					class="opacity-25"
+					cx="12"
+					cy="12"
+					r="10"
+					stroke="currentColor"
+					stroke-width="4"
+				></circle>
+				<path
+					class="opacity-75"
+					fill="currentColor"
+					d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+				></path>
+			</svg>
+			<p class="text-sm font-semibold text-indigo-100">
+				Cargando campañas disponibles...
+			</p>
+		</div>
+		} @else {
+		<div
+			class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+		>
+			@for (campaign of campaigns(); track campaign.id) {
+			<div
+				class="group flex flex-col overflow-hidden rounded-3xl border border-white/20 bg-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.1)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-400/50 hover:bg-white/10 hover:shadow-lg"
+			>
+				<div class="flex-1 p-6">
+					<h3
+						class="mb-4 text-lg leading-tight font-bold text-white drop-shadow-sm transition-colors"
+					>
+						{{ campaign.name }}
+					</h3>
+					<div
+						class="flex items-center gap-2.5 text-sm font-medium text-indigo-200"
+					>
+						<div
+							class="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/10 transition-colors group-hover:bg-indigo-500/30"
+						>
+							<ng-icon
+								name="heroPhoneSolid"
+								color="#A5B4FC"
+								class="transition-colors group-hover:text-indigo-300"
+							/>
+						</div>
+						<span>Cola:</span>
+						<span class="font-mono font-bold text-indigo-100"
+							>{{ campaign.ombutelQueueId }}</span
+						>
+					</div>
+				</div>
+				<div class="px-6 pt-2 pb-6">
+					<button
+						(click)="connectToCampaign(campaign)"
+						type="button"
+						class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-indigo-400/30 bg-indigo-600/80 px-4 py-2.5 font-semibold text-white shadow-md backdrop-blur-md transition-all duration-300 hover:bg-indigo-500 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:outline-none"
+					>
+						<ng-icon
+							name="heroPhoneArrowDownLeftSolid"
+							size="20"
+							color="white"
+						/>
+						Conectarse
+					</button>
+				</div>
+			</div>
+			} @empty {
+			<div
+				class="col-span-full rounded-3xl border-2 border-dashed border-white/20 bg-white/5 p-12 text-center backdrop-blur-md"
+			>
+				<h3 class="mt-2 text-base font-bold text-white">
+					No hay campañas disponibles
+				</h3>
+				<p class="mt-1 text-sm text-indigo-200">
+					Ponte en contacto con tu supervisor para obtener asignación.
+				</p>
+			</div>
+			}
+		</div>
+		} }
+
+		<!-- ESTADOS: EN COLA (PAUSED / READY) -->
+		@if (currentState() === 'PAUSED' || currentState() === 'READY') {
+		<div
+			class="animate-in zoom-in-95 mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center rounded-3xl border border-white/20 bg-white/10 p-10 py-12 text-center shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-xl duration-300"
+		>
+			<div
+				class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent"
+			></div>
+
+			<div
+				class="relative mb-8 flex h-36 w-36 items-center justify-center rounded-full border shadow-inner transition-all duration-300"
+				[ngClass]="currentState() === 'READY' ? 'border-indigo-400/30 bg-indigo-500/20' : 'border-white/20 bg-white/5'"
+			>
+				@if (currentState() === 'READY') {
+				<div
+					class="absolute inset-0 animate-ping rounded-full border-4 border-indigo-400/50 opacity-20"
+				></div>
+				<ng-icon
+					name="heroPhoneSolid"
+					size="52"
+					class="animate-pulse"
+					color="#818CF8"
+				/>
+				} @else {
+				<ng-icon name="heroPauseSolid" size="52" color="#94A3B8" />
+				}
+			</div>
+
+			<h2 class="mb-2 text-3xl font-extrabold text-white drop-shadow-md">
+				{{ currentState() === 'READY' ? 'Esperando Llamadas' : 'Agente en
+				Pausa'}}
+			</h2>
+			<p class="mb-10 text-lg text-indigo-200">
+				Campaña actual:
+				<span class="font-bold text-white"
+					>{{ activeCampaign()?.name }}</span
+				>
+			</p>
+
+			<button
+				(click)="toggleReadyState()"
+				type="button"
+				class="flex cursor-pointer items-center gap-3 rounded-full border border-white/10 px-8 py-4 text-base font-bold text-white shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-md transition-all duration-300 hover:scale-105 focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:outline-none active:scale-95"
+				[ngClass]="currentState() === 'READY' ? 'bg-slate-700/80 hover:bg-slate-600' : 'bg-indigo-600/80 hover:bg-indigo-500 border-indigo-400/30'"
+			>
+				@if (currentState() === 'READY') {
+				<ng-icon name="heroPauseSolid" size="24" color="white" /> Pausar
+				Recepción } @else {
+				<ng-icon name="heroPlaySolid" size="24" color="white" /> Ponerse
+				Ready }
+			</button>
+		</div>
+		}
+
+		<!-- ESTADO: RINGING -->
+		@if (currentState() === 'RINGING') {
+		<div
+			class="animate-in slide-in-from-bottom-4 mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center rounded-3xl border border-emerald-400/30 bg-emerald-950/40 p-10 py-12 text-center shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-xl duration-300"
+		>
+			<div
+				class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-emerald-400/40 to-transparent"
+			></div>
+
+			<div
+				class="mb-8 flex h-36 w-36 animate-bounce items-center justify-center rounded-full border border-emerald-400/50 bg-emerald-500/20 shadow-[0_0_30px_rgba(52,211,153,0.3)] backdrop-blur-sm"
+			>
+				<ng-icon
+					name="heroPhoneSolid"
+					size="60"
+					class="animate-pulse"
+					color="#34D399"
+				/>
+			</div>
+
+			<span
+				class="mb-2 text-xs font-bold tracking-widest text-emerald-300 uppercase drop-shadow-md"
+				>Llamada Entrante</span
+			>
+			<h2
+				class="mb-6 font-mono text-5xl font-black tracking-wider text-white drop-shadow-lg"
+			>
+				{{ callerNumber() }}
+			</h2>
+			<p class="text-sm font-medium text-emerald-100/80">
+				Conteste en su softphone o teléfono físico.
+			</p>
+		</div>
+		}
+
+		<!-- ESTADOS: IN_CALL / WRAP_UP (Vista de Gestión) -->
+		@if (currentState() === 'IN_CALL' || currentState() === 'WRAP_UP') {
+		<div
+			class="animate-in fade-in grid flex-1 grid-cols-1 gap-8 duration-300 lg:grid-cols-3"
+		>
+			<!-- Panel Izquierdo: Info de Llamada y Script -->
+			<div class="flex flex-col gap-4 lg:col-span-1">
+				<!-- Tarjeta: Datos de la Llamada -->
+				<div
+					class="relative overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-8 shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-xl"
+				>
+					<div
+						class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent"
+					></div>
+
+					@if (currentState() === 'IN_CALL') {
+					<div
+						class="mb-6 flex w-fit animate-pulse items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/20 px-3 py-1.5 text-xs font-bold tracking-wider text-emerald-300 uppercase shadow-inner"
+					>
+						<span
+							class="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"
+						></span>
+						En Curso
+					</div>
+					} @else {
+					<div
+						class="mb-6 flex w-fit items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/20 px-3 py-1.5 text-xs font-bold tracking-wider text-amber-300 uppercase shadow-inner"
+					>
+						<span
+							class="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24]"
+						></span>
+						Finalizada (Wrap-up)
+					</div>
+					}
+
+					<h3
+						class="text-xs font-semibold tracking-wider text-indigo-300 uppercase"
+					>
+						Cliente
+					</h3>
+					<div
+						class="mb-6 font-mono text-3xl font-black text-white drop-shadow-sm"
+					>
+						{{ callerNumber() }}
+					</div>
+
+					<h3
+						class="text-xs font-semibold tracking-wider text-indigo-300 uppercase"
+					>
+						Campaña
+					</h3>
+					<div class="text-lg font-bold text-white drop-shadow-sm">
+						{{ activeCampaign()?.name }}
+					</div>
+				</div>
+
+				<!-- Tarjeta: Script / Guion de la Llamada -->
+				<div
+					class="relative flex flex-col overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-6 shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-xl"
+				>
+					<!-- Borde superior resplandeciente -->
+					<div
+						class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent"
+					></div>
+
+					<!-- Encabezado del Script -->
+					<div
+						class="mb-4 flex items-center gap-2 border-b border-white/10 pb-3"
+					>
+						<ng-icon
+							name="heroDocumentTextSolid"
+							class="text-lg text-indigo-300"
+						></ng-icon>
+						<h3
+							class="text-xs font-semibold tracking-wider text-indigo-300 uppercase"
+						>
+							Guion
+						</h3>
+					</div>
+
+					<!-- Área de lectura del Markdown con Scrollbar estilizado -->
+					<div
+						class="prose prose-invert prose-indigo prose-sm prose-headings:font-bold prose-headings:text-white prose-h1:text-lg prose-h2:text-base prose-h3:text-sm prose-strong:text-white prose-code:rounded prose-code:bg-black/30 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-indigo-200 prose-pre:border prose-pre:border-white/10 prose-pre:bg-black/40 prose-a:text-indigo-300 max-h-95 max-w-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent overflow-y-auto pr-2 text-indigo-100/90"
+					>
+						<markdown [src]="scriptPath()"></markdown>
+					</div>
+				</div>
+			</div>
+
+			<!-- Panel Derecho: Formulario Dinámico de Sonata -->
+			<div
+				class="relative flex flex-col overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-6 shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-xl sm:p-8 lg:col-span-2"
+			>
+				<div
+					class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent"
+				></div>
+
+				<div
+					class="mb-6 flex items-center gap-4 border-b border-white/10 pb-6"
+				>
+					<div
+						class="flex h-12 w-12 items-center justify-center rounded-2xl border border-indigo-400/30 bg-indigo-500/20 shadow-inner"
+					>
+						<ng-icon
+							name="heroDocumentTextSolid"
+							size="24"
+							color="#A5B4FC"
+						/>
+					</div>
+					<div>
+						<h2 class="text-2xl font-bold text-white drop-shadow-sm">
+							Tipificación de Llamada
+						</h2>
+						<p class="text-sm font-medium text-indigo-200">
+							Campos requeridos por la campaña actual
+						</p>
+					</div>
+				</div>
+
+				<!-- RENDER DE CAMPOS Y FORMULARIO -->
+				<form
+					[formGroup]="dynamicForm()"
+					(ngSubmit)="saveForm()"
+					class="flex flex-1 flex-col justify-between"
+				>
+					<div class="space-y-6">
+						<!-- BANNER INDICADOR DE CONTACTO REGISTRADO EN BD -->
+						@if (isExistingContact()) {
+						<div
+							class="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-300 backdrop-blur-sm"
+						>
+							<ng-icon
+								name="heroCheckSolid"
+								size="22"
+								class="shrink-0 text-emerald-400"
+							/>
+							<div class="text-xs font-medium">
+								<span class="block font-bold text-white"
+									>Contacto existente encontrado</span
+								>
+								Los datos fueron cargados desde la base de datos.
+							</div>
+						</div>
+						}
+
+						<!-- CONTROLES FIJOS: DATOS BÁSICOS DEL CLIENTE -->
+						<div
+							class="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-5 shadow-inner backdrop-blur-sm"
+						>
+							<h3
+								class="text-xs font-bold tracking-wider text-indigo-300 uppercase"
+							>
+								Datos Básicos del Cliente
+							</h3>
+							<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+								<!-- NOMBRE FIJO -->
+								<div>
+									<label
+										for="firstName"
+										class="mb-1.5 block text-sm font-semibold text-indigo-100"
+									>
+										Nombre <span class="text-red-400">*</span>
+									</label>
+									<input
+										type="text"
+										id="firstName"
+										formControlName="firstName"
+										placeholder="Ingrese el nombre"
+										[class.border-red-400]="dynamicForm().get('firstName')?.touched && dynamicForm().get('firstName')?.invalid"
+										[class.bg-red-500/10]="dynamicForm().get('firstName')?.touched && dynamicForm().get('firstName')?.invalid"
+										class="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-white shadow-inner backdrop-blur-sm transition-colors placeholder:text-white/40 focus:border-indigo-400 focus:bg-white/10 focus:outline-none disabled:opacity-50"
+									/>
+									@if (dynamicForm().get('firstName')?.touched &&
+									dynamicForm().get('firstName')?.errors?.['required'])
+									{
+									<p class="mt-1.5 text-xs font-semibold text-red-400">
+										El nombre del cliente es obligatorio.
+									</p>
+									}
+								</div>
+
+								<!-- APELLIDO FIJO -->
+								<div>
+									<label
+										for="lastName"
+										class="mb-1.5 block text-sm font-semibold text-indigo-100"
+									>
+										Apellido <span class="text-red-400">*</span>
+									</label>
+									<input
+										type="text"
+										id="lastName"
+										formControlName="lastName"
+										placeholder="Ingrese el apellido"
+										[class.border-red-400]="dynamicForm().get('lastName')?.touched && dynamicForm().get('lastName')?.invalid"
+										[class.bg-red-500/10]="dynamicForm().get('lastName')?.touched && dynamicForm().get('lastName')?.invalid"
+										class="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-white shadow-inner backdrop-blur-sm transition-colors placeholder:text-white/40 focus:border-indigo-400 focus:bg-white/10 focus:outline-none disabled:opacity-50"
+									/>
+									@if (dynamicForm().get('lastName')?.touched &&
+									dynamicForm().get('lastName')?.errors?.['required'])
+									{
+									<p class="mt-1.5 text-xs font-semibold text-red-400">
+										El apellido del cliente es obligatorio.
+									</p>
+									}
+								</div>
+							</div>
+						</div>
+
+						<!-- SELECTOR FIJO DE DISPOSITION / RESULTADO DE LLAMADA -->
+						<div
+							class="rounded-2xl border border-indigo-400/30 bg-indigo-900/40 p-5 shadow-inner backdrop-blur-sm"
+						>
+							<label
+								for="disposition"
+								class="mb-2 block text-sm font-bold text-indigo-100"
+							>
+								Resultado de Llamada (Disposition)<span
+									class="ml-1 text-red-400"
+									>*</span
+								>
+							</label>
+							<div class="relative">
+								<select
+									id="disposition"
+									formControlName="disposition"
+									[class.border-red-400]="dynamicForm().get('disposition')?.touched && dynamicForm().get('disposition')?.invalid"
+									[class.bg-red-500/10]="dynamicForm().get('disposition')?.touched && dynamicForm().get('disposition')?.invalid"
+									class="w-full appearance-none rounded-xl border border-white/20 bg-white/5 px-4 py-3 pr-10 text-sm font-medium text-white shadow-inner backdrop-blur-sm transition-colors focus:border-indigo-400 focus:bg-white/10 focus:outline-none disabled:opacity-50"
+								>
+									<option
+										value=""
+										disabled
+										selected
+										class="bg-slate-900 text-white"
+									>
+										Seleccione una disposición...
+									</option>
+									@for (disp of dispositions(); track disp.id || disp)
+									{
+									<option
+										[value]="disp.id || disp"
+										class="bg-slate-900 text-white"
+									>
+										{{ disp.name || disp }}
+									</option>
+									}
+								</select>
+								<div
+									class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-indigo-300"
+								>
+									<ng-icon name="heroChevronDownSolid" size="16" />
+								</div>
+							</div>
+							@if (dynamicForm().get('disposition')?.touched &&
+							dynamicForm().get('disposition')?.errors?.['required']) {
+							<p class="mt-2 text-xs font-semibold text-red-400">
+								Debe seleccionar un resultado para finalizar la gestión.
+							</p>
+							}
+						</div>
+
+						@if (formSchema().length === 0) {
+						<div
+							class="rounded-2xl border-2 border-dashed border-white/20 bg-white/5 p-8 text-center text-sm font-medium text-indigo-300/70"
+						>
+							No hay campos adicionales configurados para el formulario
+							de esta campaña.
+						</div>
+						}
+
+						<!-- CAMPOS DINÁMICOS DEL FORMULARIO DE SONATA -->
+						<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+							@for (field of formSchema(); track field.name) { @if
+							(isFieldVisible(field)) {
+							<div
+								[class.md:col-span-2]=" field.type === 'TextAreaField' || field.type === 'CheckboxListGroup' || field.type === 'RadioField' || field.attr['size'] === '100%' "
+							>
+								<label
+									[for]="field.name"
+									class="mb-1.5 block text-sm font-semibold text-indigo-100 capitalize"
+								>
+									{{ field.name }} @if (field.rules.required) {
+									<span class="text-red-400">*</span> }
+								</label>
+
+								@switch (field.type) { @case ('SelectField') {
+								<div class="relative">
+									<select
+										[id]="field.name"
+										[formControlName]="field.name"
+										[class.border-red-400]="dynamicForm().get(field.name)?.touched && dynamicForm().get(field.name)?.invalid"
+										[class.bg-red-500/10]="dynamicForm().get(field.name)?.touched && dynamicForm().get(field.name)?.invalid"
+										class="w-full appearance-none rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 pr-10 text-sm font-medium text-white shadow-inner backdrop-blur-sm transition-colors focus:border-indigo-400 focus:bg-white/10 focus:outline-none disabled:opacity-50"
+									>
+										<option
+											value=""
+											disabled
+											selected
+											class="bg-slate-900 text-white"
+										>
+											{{ field.placeholder || 'Seleccione una
+											opción...' }}
+										</option>
+										@for (opt of field.options; track opt) {
+										<option
+											[value]="opt"
+											class="bg-slate-900 text-white"
+										>
+											{{ opt }}
+										</option>
+										}
+									</select>
+									<div
+										class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-indigo-300"
+									>
+										<ng-icon name="heroChevronDownSolid" size="16" />
+									</div>
+								</div>
+								} @case ('TextAreaField') {
+								<textarea
+									[id]="field.name"
+									[formControlName]="field.name"
+									[rows]="field.attr['rows'] || 3"
+									[placeholder]="field.placeholder || ''"
+									[class.border-red-400]="dynamicForm().get(field.name)?.touched && dynamicForm().get(field.name)?.invalid"
+									[class.bg-red-500/10]="dynamicForm().get(field.name)?.touched && dynamicForm().get(field.name)?.invalid"
+									class="w-full rounded-xl border border-white/20 bg-white/5 p-3 text-sm font-medium text-white shadow-inner backdrop-blur-sm transition-colors placeholder:text-white/40 focus:border-indigo-400 focus:bg-white/10 focus:outline-none disabled:opacity-50"
+								></textarea>
+								} @case ('NumberField') {
+								<input
+									type="number"
+									[id]="field.name"
+									[formControlName]="field.name"
+									[placeholder]="field.placeholder || ''"
+									[class.border-red-400]="dynamicForm().get(field.name)?.touched && dynamicForm().get(field.name)?.invalid"
+									[class.bg-red-500/10]="dynamicForm().get(field.name)?.touched && dynamicForm().get(field.name)?.invalid"
+									class="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-white shadow-inner backdrop-blur-sm transition-colors placeholder:text-white/40 focus:border-indigo-400 focus:bg-white/10 focus:outline-none disabled:opacity-50"
+								/>
+								} @case ('EmailField') {
+								<input
+									type="email"
+									[id]="field.name"
+									[formControlName]="field.name"
+									[placeholder]="field.placeholder || 'ejemplo@correo.com'"
+									[class.border-red-400]="dynamicForm().get(field.name)?.touched && dynamicForm().get(field.name)?.invalid"
+									[class.bg-red-500/10]="dynamicForm().get(field.name)?.touched && dynamicForm().get(field.name)?.invalid"
+									class="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-white shadow-inner backdrop-blur-sm transition-colors placeholder:text-white/40 focus:border-indigo-400 focus:bg-white/10 focus:outline-none disabled:opacity-50"
+								/>
+								} @case ('DateField') {
+								<input
+									type="date"
+									[id]="field.name"
+									[formControlName]="field.name"
+									[class.border-red-400]="dynamicForm().get(field.name)?.touched && dynamicForm().get(field.name)?.invalid"
+									[class.bg-red-500/10]="dynamicForm().get(field.name)?.touched && dynamicForm().get(field.name)?.invalid"
+									class="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-white shadow-inner backdrop-blur-sm transition-colors placeholder:text-white/40 focus:border-indigo-400 focus:bg-white/10 focus:outline-none disabled:opacity-50 [&::-webkit-calendar-picker-indicator]:invert"
+								/>
+								} @case ('TimeField') {
+								<input
+									type="time"
+									[id]="field.name"
+									[formControlName]="field.name"
+									[class.border-red-400]="dynamicForm().get(field.name)?.touched && dynamicForm().get(field.name)?.invalid"
+									[class.bg-red-500/10]="dynamicForm().get(field.name)?.touched && dynamicForm().get(field.name)?.invalid"
+									class="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-white shadow-inner backdrop-blur-sm transition-colors placeholder:text-white/40 focus:border-indigo-400 focus:bg-white/10 focus:outline-none disabled:opacity-50 [&::-webkit-calendar-picker-indicator]:invert"
+								/>
+								} @case ('RadioField') {
+								<div class="flex flex-wrap gap-4 pt-1">
+									@for (opt of field.options; track opt) {
+									<label
+										class="flex cursor-pointer items-center gap-2 text-sm font-medium text-indigo-100"
+									>
+										<input
+											type="radio"
+											[name]="field.name"
+											[value]="opt"
+											[formControlName]="field.name"
+											class="h-4 w-4 border-white/30 bg-white/10 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-slate-900"
+										/>
+										{{ opt }}
+									</label>
+									}
+								</div>
+								} @case ('CheckboxListGroup') {
+								<div class="flex flex-wrap gap-4 pt-1">
+									@for (opt of field.options; track opt) {
+									<label
+										class="flex cursor-pointer items-center gap-2 text-sm font-medium text-indigo-100"
+									>
+										<input
+											type="checkbox"
+											[checked]="isOptionChecked(field.name, opt)"
+											(change)="onCheckboxChange(field.name, opt, $event)"
+											class="h-4 w-4 rounded border-white/30 bg-white/10 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-slate-900"
+										/>
+										{{ opt }}
+									</label>
+									}
+								</div>
+								} @case ('ImgField') {
+								<input
+									type="file"
+									accept="image/*"
+									[id]="field.name"
+									class="w-full text-sm text-indigo-200 file:mr-4 file:cursor-pointer file:rounded-xl file:border-0 file:bg-white/10 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white file:transition-colors hover:file:bg-white/20"
+								/>
+								} @default {
+								<input
+									type="text"
+									[id]="field.name"
+									[formControlName]="field.name"
+									[placeholder]="field.placeholder || ''"
+									[class.border-red-400]="dynamicForm().get(field.name)?.touched && dynamicForm().get(field.name)?.invalid"
+									[class.bg-red-500/10]="dynamicForm().get(field.name)?.touched && dynamicForm().get(field.name)?.invalid"
+									class="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-white shadow-inner backdrop-blur-sm transition-colors placeholder:text-white/40 focus:border-indigo-400 focus:bg-white/10 focus:outline-none disabled:opacity-50"
+								/>
+								} } @if (dynamicForm().get(field.name)?.touched &&
+								dynamicForm().get(field.name)?.errors?.['required']) {
+								<p class="mt-1.5 text-xs font-semibold text-red-400">
+									Este campo es obligatorio.
+								</p>
+								} @if (dynamicForm().get(field.name)?.touched &&
+								dynamicForm().get(field.name)?.errors?.['email']) {
+								<p class="mt-1.5 text-xs font-semibold text-red-400">
+									Ingrese un correo electrónico válido.
+								</p>
+								}
+							</div>
+							} }
+						</div>
+					</div>
+
+					<!-- BOTONES DE ACCIÓN DE GESTIÓN -->
+					<div
+						class="mt-8 flex justify-end gap-4 border-t border-white/10 pt-6"
+					>
+						@if (formSaved()) {
+						<div
+							class="flex items-center gap-2 font-bold text-emerald-400 drop-shadow-sm"
+						>
+							<ng-icon
+								name="heroCheckCircleSolid"
+								size="24"
+								color="#34D399"
+							/>
+							Gestión guardada
+						</div>
+						} @else {
+						<button
+							type="submit"
+							[disabled]="dynamicForm().invalid || currentState() !== 'WRAP_UP'"
+							class="cursor-pointer rounded-xl border border-indigo-400/30 bg-indigo-600/80 px-8 py-3 font-bold text-white shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-md transition-all duration-300 hover:bg-indigo-500 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							Guardar Gestión
+						</button>
+						} @if (currentState() === 'WRAP_UP' && formSaved()) {
+						<button
+							type="button"
+							(click)="finishInteraction()"
+							class="cursor-pointer rounded-xl border border-white/20 bg-white/10 px-8 py-3 font-bold text-white shadow-sm backdrop-blur-md transition-all duration-300 hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none"
+						>
+							Volver a Ready
+						</button>
+						}
+					</div>
+				</form>
+			</div>
+		</div>
+		} @if (showCsvModal()) {
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-4 backdrop-blur-md"
+		>
+			<div
+				class="w-full max-w-md rounded-3xl border border-white/20 bg-slate-900/90 p-6 shadow-2xl backdrop-blur-xl"
+			>
+				<div
+					class="flex items-center justify-between border-b border-white/10 pb-4"
+				>
+					<div class="flex items-center gap-3">
+						<div
+							class="flex h-10 w-10 items-center justify-center rounded-full border border-indigo-400/30 bg-indigo-500/20"
+						>
+							<ng-icon
+								name="heroArrowDownTraySolid"
+								size="20"
+								color="#A5B4FC"
+							/>
+						</div>
+						<div>
+							<h3 class="text-lg font-bold text-white">
+								Descargar reporte de turno
+							</h3>
+							<p class="text-xs text-indigo-200">
+								Clientes registrados en esta sesión
+							</p>
+						</div>
+					</div>
+					<button
+						(click)="showCsvModal.set(false)"
+						class="rounded-full p-1 text-slate-400 hover:bg-white/10 hover:text-white"
+					>
+						<ng-icon name="heroXMarkSolid" size="20" />
+					</button>
+				</div>
+
+				<div class="my-6">
+					<p class="text-sm leading-relaxed text-slate-300">
+						Has registrado
+						<strong class="font-bold text-indigo-300"
+							>{{ attendedCustomers().length }}</strong
+						>
+						cliente(s) durante este turno. ¿Deseas descargar el archivo
+						CSV compatible con Sonata antes de salir?
+					</p>
+				</div>
+
+				<div class="flex flex-col gap-3 sm:flex-row">
+					<button
+						type="button"
+						(click)="closeCsvModalAndExit()"
+						class="flex-1 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-center text-sm font-semibold text-slate-300 transition-colors hover:bg-white/10"
+					>
+						Salir sin guardar
+					</button>
+					<button
+						type="button"
+						(click)="exportCsvAndExit()"
+						class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-lg transition-colors hover:bg-indigo-500"
+					>
+						<ng-icon
+							name="heroArrowDownTraySolid"
+							size="18"
+							color="white"
+						/>
+						Descargar y Salir
+					</button>
+				</div>
+			</div>
+		</div>
+		}
+	</main>
+</div>

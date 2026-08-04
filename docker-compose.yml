@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  iris-app:
+    image: iris-inbound:latest
+    container_name: iris-inbound
+    network_mode: "host"
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    volumes:
+      # Volume del script de agentes
+      - /home/jrios/iris/script/script.md:/app/script/script.md
+      # Volume de las grabaciones de Asterisk (lectura para la app)
+      - /var/spool/asterisk/monitor:/var/spool/asterisk/monitor:ro

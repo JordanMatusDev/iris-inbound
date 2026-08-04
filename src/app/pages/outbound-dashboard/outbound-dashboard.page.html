@@ -1,0 +1,229 @@
+<div
+	class="relative flex h-screen w-full flex-col overflow-hidden bg-indigo-950 font-sans text-slate-100"
+>
+	<!-- Background Blobs (Tematizados en tonos índigo y violeta) -->
+	<div
+		class="pointer-events-none absolute top-[-10%] left-[-10%] h-[50vh] w-[50vw] rounded-full bg-indigo-500/30 blur-[120px]"
+	></div>
+	<div
+		class="pointer-events-none absolute right-[-10%] bottom-[-10%] h-[50vh] w-[50vw] rounded-full bg-purple-600/30 blur-[120px]"
+	></div>
+	<div
+		class="pointer-events-none absolute top-[30%] left-[30%] h-[40vh] w-[40vw] rounded-full bg-blue-500/20 blur-[120px]"
+	></div>
+
+	<!-- Header Glassmorphism -->
+	<header
+		class="relative z-50 flex items-center justify-between border-b border-white/10 bg-white/5 px-6 py-4 shadow-sm backdrop-blur-md"
+	>
+		<div class="flex items-center gap-4">
+			<!-- Botón Volver -->
+			<button
+				(click)="goBack()"
+				class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-white/10 transition-all duration-300 hover:bg-white/20 hover:shadow-lg"
+			>
+				<ng-icon name="heroArrowLeftSolid" size="20" color="white" />
+			</button>
+			<div>
+				<h1
+					class="text-xl font-bold tracking-tight text-white drop-shadow-sm"
+				>
+					Panel Outbound
+				</h1>
+				<p class="text-sm font-medium text-indigo-200">
+					Integración Sonata Dialer
+				</p>
+			</div>
+		</div>
+
+		<!-- Usuario -->
+		<div
+			class="flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 shadow-inner backdrop-blur-sm"
+		>
+			<div
+				class="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-white/20 pb-0.5 leading-none font-bold text-white shadow-sm"
+			>
+				{{ user()?.username?.charAt(0) | uppercase }}
+			</div>
+			<div class="text-sm font-bold tracking-wide text-white">
+				Ext: {{ user()?.extension }}
+			</div>
+		</div>
+	</header>
+
+	<!-- Main Content Area -->
+	<main
+		class="relative z-10 flex flex-1 flex-col items-center justify-center p-6"
+	>
+		<!-- ESTADO: IDLE -->
+		@if (currentState() === 'IDLE') {
+		<div
+			class="animate-in fade-in zoom-in flex w-full max-w-md flex-col items-center rounded-3xl border border-white/20 bg-white/10 p-10 text-center shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-xl duration-300"
+		>
+			<div
+				class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent"
+			></div>
+
+			<div
+				class="mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-white/5 shadow-inner"
+			>
+				<ng-icon name="heroPhoneSolid" size="48" color="#A5B4FC" />
+			</div>
+			<h2 class="mb-2 text-2xl font-bold text-white drop-shadow-md">
+				Fuera de línea
+			</h2>
+			<p class="mb-8 text-indigo-100">
+				Inicie sesión en Sonata Dialer y póngase listo. El sistema detectará
+				automáticamente cuando ingrese a la cola.
+			</p>
+
+			<a
+				[href]="dialerUrl"
+				target="_blank"
+				class="rounded-xl border border-indigo-400/30 bg-indigo-600/80 px-6 py-3 font-bold text-white shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-md transition-all duration-300 hover:bg-indigo-500 hover:shadow-lg"
+			>
+				Abrir Sonata Dialer
+			</a>
+		</div>
+		}
+
+		<!-- ESTADO: WAITING_CALL -->
+		@if (currentState() === 'WAITING_CALL') {
+		<div
+			class="animate-in fade-in zoom-in flex w-full max-w-md flex-col items-center rounded-3xl border border-white/20 bg-white/10 p-10 text-center shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-xl duration-300"
+		>
+			<div
+				class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent"
+			></div>
+
+			<div
+				class="relative mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-indigo-400/30 bg-indigo-500/20 shadow-inner"
+			>
+				<div
+					class="absolute inset-0 animate-ping rounded-full border-4 border-indigo-400/50 opacity-20"
+				></div>
+				<ng-icon
+					name="heroPhoneSolid"
+					size="40"
+					class="animate-pulse"
+					color="#818CF8"
+				/>
+			</div>
+			<h2 class="mb-2 text-2xl font-bold text-white drop-shadow-md">
+				En cola de marcación
+			</h2>
+			<p class="text-indigo-100">
+				Esperando que el marcador asigne una llamada...
+			</p>
+		</div>
+		}
+
+		<!-- ESTADO: IN_CALL (Llamada activa en progreso - Temática Verde Esmeralda) -->
+		@if (currentState() === 'IN_CALL') {
+		<div
+			class="animate-in slide-in-from-bottom-4 fade-in flex w-full max-w-2xl flex-col items-center rounded-3xl border border-emerald-400/30 bg-emerald-950/40 p-10 text-center shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-xl duration-300"
+		>
+			<div
+				class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-emerald-400/40 to-transparent"
+			></div>
+
+			<span
+				class="mb-4 flex animate-pulse items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/20 px-4 py-1.5 text-sm font-bold tracking-widest text-emerald-300 uppercase shadow-inner"
+			>
+				<span
+					class="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"
+				></span>
+				Llamada en Curso
+			</span>
+
+			<h2 class="mb-2 text-3xl font-bold text-white drop-shadow-md">
+				Atendiendo al cliente
+			</h2>
+			<p class="mb-8 text-emerald-100/80">
+				El identificador para el formulario estará disponible para copiar
+				tan pronto como la llamada finalice.
+			</p>
+
+			<!-- Display Deshabilitado / Bloqueado -->
+			<div
+				class="w-full rounded-2xl border border-white/10 bg-black/20 p-6 shadow-inner"
+			>
+				<span
+					class="font-mono text-4xl font-black tracking-wider text-white/40 drop-shadow-sm"
+				>
+					{{ currentUniqueId() }}
+				</span>
+			</div>
+		</div>
+		}
+
+		<!-- ESTADO: SAVING (Llamada colgada, listo para copiar - Temática Índigo/Ámbar) -->
+		@if (currentState() === 'SAVING') {
+		<div
+			class="animate-in slide-in-from-bottom-4 fade-in flex w-full max-w-2xl flex-col items-center rounded-3xl border border-indigo-400/30 bg-indigo-900/40 p-10 text-center shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-xl duration-300"
+		>
+			<div
+				class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-indigo-400/40 to-transparent"
+			></div>
+
+			<span
+				class="mb-4 flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/20 px-4 py-1.5 text-sm font-bold tracking-widest text-amber-300 uppercase shadow-inner"
+			>
+				<ng-icon name="heroPhoneXMarkSolid" size="18" color="#FCD34D" />
+				Llamada Finalizada - Guarde la Gestión
+			</span>
+
+			<h2 class="mb-2 text-3xl font-bold text-white drop-shadow-md">
+				Copie el Identificador
+			</h2>
+			<p class="mb-8 text-indigo-100">
+				Haga clic en el código para copiarlo al portapapeles y péguelo en
+				Sonata.
+			</p>
+
+			<!-- Botón de Copiar ID -->
+			<div
+				class="group relative mb-6 w-full cursor-pointer"
+				(click)="copyToClipboard()"
+			>
+				<div
+					class="flex items-center justify-between rounded-2xl border-2 border-dashed border-indigo-400/50 bg-indigo-950/50 p-6 transition-all duration-300 group-hover:border-indigo-400 group-hover:bg-indigo-900/60 group-hover:shadow-[0_0_20px_rgba(129,140,248,0.2)]"
+				>
+					<span
+						class="font-mono text-4xl font-black tracking-wider text-indigo-200 drop-shadow-md transition-colors group-hover:text-white"
+					>
+						{{ currentUniqueId() }}
+					</span>
+					<div
+						class="flex h-12 w-12 items-center justify-center rounded-full border border-indigo-400/30 bg-indigo-600/80 text-white shadow-[0_4px_15px_rgba(0,0,0,0.2)] backdrop-blur-md transition-all duration-300 group-hover:scale-110 group-hover:bg-indigo-500"
+					>
+						@if (copied()) {
+						<ng-icon
+							name="heroCheckCircleSolid"
+							size="24"
+							color="white"
+						/>
+						} @else {
+						<ng-icon
+							name="heroClipboardDocumentSolid"
+							size="24"
+							color="white"
+						/>
+						}
+					</div>
+				</div>
+			</div>
+
+			<!-- Botón Siguiente Llamada -->
+			@if (copied()) {
+			<button
+				(click)="completeDisposition()"
+				class="animate-in fade-in zoom-in w-full cursor-pointer rounded-xl border border-indigo-400/30 bg-indigo-600/80 py-4 font-bold text-white shadow-[0_4px_30px_rgba(0,0,0,0.2)] backdrop-blur-md transition-all duration-200 hover:scale-[1.02] hover:bg-indigo-500 hover:shadow-lg active:scale-95"
+			>
+				Listo / Siguiente Llamada ➔
+			</button>
+			}
+		</div>
+		}
+	</main>
+</div>

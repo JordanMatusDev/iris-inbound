@@ -1,0 +1,146 @@
+<div
+	class="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-slate-950 p-4 font-sans sm:p-6"
+>
+	<!-- Background Blobs (Manteniendo consistencia visual) -->
+	<div
+		class="pointer-events-none absolute top-[-10%] left-[-10%] h-[50vh] w-[50vw] rounded-full bg-indigo-600/40 blur-[120px]"
+	></div>
+	<div
+		class="pointer-events-none absolute right-[-10%] bottom-[-10%] h-[50vh] w-[50vw] rounded-full bg-purple-600/40 blur-[120px]"
+	></div>
+	<div
+		class="pointer-events-none absolute top-[20%] left-[40%] h-[30vh] w-[30vw] rounded-full bg-blue-500/30 blur-[100px]"
+	></div>
+
+	<form
+		[formGroup]="loginForm"
+		(ngSubmit)="onSubmit()"
+		class="relative z-10 w-full max-w-md space-y-6 overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-8 shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-lg"
+	>
+		<!-- Reflejo superior sutil del cristal -->
+		<div
+			class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/40 to-transparent"
+		></div>
+
+		<!-- Header -->
+		<div class="relative z-10 space-y-2 text-center">
+			<h1
+				class="text-3xl font-bold tracking-tight text-white drop-shadow-md"
+			>
+				Iris: Contact Center
+			</h1>
+			<p class="font-medium text-indigo-200">Inicia sesión</p>
+		</div>
+
+		<!-- Contenedor de los inputs -->
+		<div class="relative z-10 space-y-5">
+			<!-- Usuario -->
+			<div class="space-y-1.5">
+				<label
+					for="username"
+					class="block text-sm font-semibold text-indigo-100 drop-shadow-sm"
+				>
+					Usuario
+				</label>
+				<input
+					id="username"
+					type="text"
+					formControlName="username"
+					placeholder="Nombre de usuario..."
+					class="w-full rounded-lg border bg-white/5 px-4 py-2.5 text-white shadow-inner backdrop-blur-sm transition-all duration-300 placeholder:text-white/40 focus:outline-none"
+					[class.border-white/20]="!isFieldInvalid('username')"
+					[class.focus:border-indigo-400]="!isFieldInvalid('username')"
+					[class.focus:bg-white/10]="!isFieldInvalid('username')"
+					[class.focus:ring-2]="!isFieldInvalid('username')"
+					[class.focus:ring-indigo-400/50]="!isFieldInvalid('username')"
+					[class.border-red-400/50]="isFieldInvalid('username')"
+					[class.focus:border-red-400]="isFieldInvalid('username')"
+					[class.focus:ring-2]="isFieldInvalid('username')"
+					[class.focus:ring-red-400/50]="isFieldInvalid('username')"
+					[class.bg-red-500/5]="isFieldInvalid('username')"
+				/>
+				@if (isFieldInvalid("username")) {
+				<span class="block text-sm font-medium text-red-400">
+					El nombre de usuario es requerido
+				</span>
+				}
+			</div>
+
+			<!-- Password -->
+			<div class="space-y-1.5">
+				<label
+					for="password"
+					class="block text-sm font-semibold text-indigo-100 drop-shadow-sm"
+				>
+					Contraseña
+				</label>
+				<input
+					id="password"
+					type="password"
+					formControlName="password"
+					placeholder="••••••••••••"
+					class="w-full rounded-lg border bg-white/5 px-4 py-2.5 text-white shadow-inner backdrop-blur-sm transition-all duration-300 placeholder:text-white/40 focus:outline-none"
+					[class.border-white/20]="!isFieldInvalid('password')"
+					[class.focus:border-indigo-400]="!isFieldInvalid('password')"
+					[class.focus:bg-white/10]="!isFieldInvalid('password')"
+					[class.focus:ring-2]="!isFieldInvalid('password')"
+					[class.focus:ring-indigo-400/50]="!isFieldInvalid('password')"
+					[class.border-red-400/50]="isFieldInvalid('password')"
+					[class.focus:border-red-400]="isFieldInvalid('password')"
+					[class.focus:ring-2]="isFieldInvalid('password')"
+					[class.focus:ring-red-400/50]="isFieldInvalid('password')"
+					[class.bg-red-500/5]="isFieldInvalid('password')"
+				/>
+				@if (isFieldInvalid("password")) {
+				<span class="block text-sm font-medium text-red-400">
+					La contraseña es requerida
+				</span>
+				}
+			</div>
+		</div>
+
+		<!-- Boton enviar -->
+		<button
+			type="submit"
+			[disabled]="loginForm.invalid || isLoading()"
+			class="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-indigo-400/30 bg-indigo-600/80 px-4 py-2.5 font-semibold text-white shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-md transition-all duration-300 hover:bg-indigo-500 focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+		>
+			@if (isLoading()) {
+			<svg
+				class="h-5 w-5 animate-spin text-white"
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+			>
+				<circle
+					class="opacity-25"
+					cx="12"
+					cy="12"
+					r="10"
+					stroke="currentColor"
+					stroke-width="4"
+				></circle>
+				<path
+					class="opacity-75"
+					fill="currentColor"
+					d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+				></path>
+			</svg>
+			} {{ isLoading() ? "Iniciando sesión..." : "Ingresar" }}
+		</button>
+
+		<!-- Error general (Glassmorphism Warning) -->
+		@if (errorMessage()) {
+		<div
+			class="flex items-center justify-center gap-2 rounded-lg border border-red-400/30 bg-red-500/10 p-3 text-center text-sm font-medium text-red-200 shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-md"
+		>
+			<ng-icon
+				name="heroExclamationCircleSolid"
+				size="24"
+				color="#FECACA"
+			></ng-icon>
+			{{ errorMessage() }}
+		</div>
+		}
+	</form>
+</div>
