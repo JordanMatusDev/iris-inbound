@@ -1,45 +1,9 @@
 import { defineEventHandler, getQuery, createError } from "h3";
 import { eq } from "drizzle-orm";
-import { dbSonata, ensureServices } from "@server/db";
-import { contacts } from "@server/db/schema-sonata";
+import { dbApp, ensureServices } from "@server/db";
 import type { ApiResponse } from "@server/types/api";
 import { requireAuth } from "@server/utils/auth";
-
-/**
- * Función auxiliar para parsear y normalizar extraFields de Sonata
- */
-function parseExtraFields(extraFieldsRaw: unknown) {
-	if (!extraFieldsRaw) return {};
-
-	let parsed: Record<string, any> = {};
-
-	try {
-		parsed =
-			typeof extraFieldsRaw === "string"
-				? JSON.parse(extraFieldsRaw)
-				: (extraFieldsRaw as Record<string, any>);
-	} catch (e) {
-		console.error("⚠️ Error al parsear extraFields del contacto:", e);
-		return {};
-	}
-
-	// Mapeamos y devolvemos las claves de forma uniforme
-	return {
-		firstName: parsed["first name"] || parsed["firstName"] || "",
-		lastName: parsed["last name"] || parsed["lastName"] || "",
-		companyName: parsed["company name"] || parsed["companyName"] || null,
-		address: parsed["address"] || null,
-		city: parsed["city"] || null,
-		country: parsed["country"] || null,
-		state: parsed["state"] || null,
-		zip: parsed["zip"] || null,
-		phone2: parsed["phone 2"] || parsed["phone2"] || null,
-		phone3: parsed["phone 3"] || parsed["phone3"] || null,
-		email: parsed["email"] || null,
-		// Incluimos cualquier otra propiedad arbitraria que venga en el JSON
-		...parsed,
-	};
-}
+import { irisCustomers } from "@server/db/schema-app";
 
 export default defineEventHandler(
 	async (event): Promise<ApiResponse<unknown>> => {
@@ -58,10 +22,10 @@ export default defineEventHandler(
 		}
 
 		try {
-			const contactList = await dbSonata
+			const contactList = await dbApp
 				.select()
-				.from(contacts)
-				.where(eq(contacts.phone1, customerPhone))
+				.from(irisCustomers)
+				.where(eq(irisCustomers.phone, customerPhone))
 				.limit(1);
 
 			const contact = contactList[0];
@@ -73,16 +37,32 @@ export default defineEventHandler(
 				});
 			}
 
-			// Deserializar y estructurar los campos
-			const contactData = parseExtraFields(contact.extraFields);
+			// Separar de forma básica el fullName en firstName y lastName
+			const nameParts = contact.fullName
+				? contact.fullName.trim().split(" ")
+				: [];
+			const firstName = nameParts[0] || "";
+			const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
 			return {
 				success: true,
 				message: "Contacto obtenido con éxito",
 				data: {
 					id: contact.id,
-					phone: customerPhone,
-					...contactData,
+					phone: contact.phone,
+					// Devolvemos firstName y lastName calculados del fullName
+					firstName: firstName,
+					lastName: lastName,
+					// Rellenamos los campos faltantes con null para mantener la misma estructura
+					companyName: null,
+					address: null,
+					city: null,
+					country: null,
+					state: null,
+					zip: null,
+					phone2: null,
+					phone3: null,
+					email: null,
 				},
 				errors: null,
 			};
