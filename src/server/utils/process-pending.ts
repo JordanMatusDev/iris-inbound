@@ -7,7 +7,8 @@ import {
 	irisCustomers,
 	type IrisCustomer,
 } from "@server/db/schema-app";
-import { users, contacts, type Contact } from "@server/db/schema-sonata";
+import { contacts, type Contact } from "@server/db/schema-sonata";
+import { users } from "@server/db/schema-app";
 import type { CallPayload } from "@server/types/payload";
 import { sendWebhookPayload } from "./calls";
 import { cdrTable, type CdrTable } from "@server/db/schema-cdr";
@@ -150,13 +151,10 @@ export async function processPendingInteractions() {
 			if ("fullName" in customer) {
 				customerName = customer.fullName;
 			} else {
-				customerName = getCustomerName(
-					customer?.extraFields,
-					customerPhone,
-				);
+				customerName = getCustomerName(customer?.extraFields, customerPhone);
 			}
 
-			const agents = await dbSonata
+			const agents = await dbApp
 				.select()
 				.from(users)
 				.where(eq(users.id, resultData.agentId))
@@ -185,7 +183,7 @@ export async function processPendingInteractions() {
 				Agent: {
 					Id: resultData.agentId,
 					Extension: agent.extension?.toString() || "1000",
-					Name: `Agente ${resultData.agentId}`,
+					Name: agent.username,
 				},
 				Disposition: {
 					Id: resultData.dispositionId,
