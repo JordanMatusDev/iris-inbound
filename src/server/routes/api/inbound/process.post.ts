@@ -3,6 +3,7 @@ import { requireAuth } from "@server/utils/auth";
 import { saveInteractionData } from "@server/utils/payload-handler";
 import { dbApp, ensureServices } from "@server/db";
 import { irisCustomers } from "@server/db/schema-app";
+import { eq } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
 	try {
@@ -42,7 +43,14 @@ export default defineEventHandler(async (event) => {
 			});
 		}
 
-		if (fullName) {
+		const customers = await dbApp
+			.select()
+			.from(irisCustomers)
+			.where(eq(irisCustomers.phone, callerNumber))
+			.limit(1);
+		const customer = customers[0];
+
+		if (fullName && !customer) {
 			await dbApp.insert(irisCustomers).values({
 				fullName: fullName as string,
 				phone: callerNumber as string,
@@ -71,11 +79,13 @@ export default defineEventHandler(async (event) => {
 			formData: formData ?? {},
 		});
 
+		console.dir(payload);
+
 		if (!payload) {
 			throw createError({
 				statusCode: 500,
 				statusMessage:
-					"No se pudo procesar la grabación o generar el payload de la gestión",
+					"No se pudo procesar la grabación o generar el payload de la gestion",
 			});
 		}
 
@@ -85,7 +95,7 @@ export default defineEventHandler(async (event) => {
 			data: payload,
 		};
 	} catch (error: any) {
-		console.error("❌ Error al procesar gestión inbound:", error);
+		console.error("❌ Error al procesar gestion inbound:", error);
 
 		if (error.statusCode) {
 			throw error;
@@ -93,7 +103,7 @@ export default defineEventHandler(async (event) => {
 
 		throw createError({
 			statusCode: 500,
-			statusMessage: "Error interno al procesar la gestión",
+			statusMessage: "Error interno al procesar la gestion",
 		});
 	}
 });

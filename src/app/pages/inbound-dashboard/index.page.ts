@@ -331,6 +331,7 @@ export default class InboundDashboardPage implements OnInit, OnDestroy {
 		if (this.formSaved()) {
 			this.finishInteraction();
 		} else {
+			this.toggleReadyState(true);
 			this.currentState.set("WRAP_UP");
 		}
 	}
@@ -362,17 +363,17 @@ export default class InboundDashboardPage implements OnInit, OnDestroy {
 			.subscribe();
 	}
 
-	toggleReadyState(): void {
+	toggleReadyState(pause: boolean = false): void {
 		const campaign = this.activeCampaign();
 		if (!campaign) return;
 
-		const targetPausedState = this.currentState() !== "PAUSED";
+		const targetPausedState = pause || this.currentState() !== "PAUSED";
 
 		this.campaignsService
 			.togglePause(campaign.ombutelQueueId.toString(), targetPausedState)
 			.subscribe({
 				next: (res: any) => {
-					if (res?.success) {
+					if (res?.success && !pause) {
 						this.currentState.set(targetPausedState ? "PAUSED" : "READY");
 					}
 				},
@@ -459,7 +460,7 @@ export default class InboundDashboardPage implements OnInit, OnDestroy {
 		this.formSaved.set(false);
 		this.isExistingContact.set(false);
 		this.dynamicForm().reset();
-		this.currentState.set("READY");
+		this.currentState.set("PAUSED");
 	}
 
 	goBack(): void {
